@@ -16,8 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1.11 minimum: the module uses the provider's write-only sensitive_body attribute, and
-      # write-only attributes only exist from Terraform 1.11.
+      # 1.11 minimum, matching terraform-azapi-logic-app-workflow so the two can share a root.
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "~> 1.11"
@@ -39,7 +38,7 @@ jobs:
       - name: Validate and test the module and examples
         run: |
           set -euo pipefail
-          for d in . examples/minimal examples/complete; do
+          for d in . $(find examples -mindepth 1 -maxdepth 1 -type d | sort); do
             echo "== ${d} =="
             terraform -chdir="${d}" init -backend=false -input=false >/dev/null
             terraform -chdir="${d}" validate
@@ -64,6 +63,7 @@ jobs:
           scan-ref: .
           severity: CRITICAL,HIGH,MEDIUM,LOW
           exit-code: "0"
+          trivyignores: .trivyignore.yaml
 
       - name: Trivy config gate (fail on HIGH or CRITICAL)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
@@ -72,12 +72,16 @@ jobs:
           scan-ref: .
           severity: HIGH,CRITICAL
           exit-code: "1"
+          trivyignores: .trivyignore.yaml
 
-  # Live apply-then-destroy of both examples via the terraform-azure action. Consumption
-  # workflows are free at rest, so unlike the Security Copilot sibling module this repo CAN
-  # self-test live. Runs only on a manual dispatch, since it needs the org OIDC variables, the
-  # firewalled state account, and the org secrets that the tenant bootstrap publishes. Trigger
-  # with: gh workflow run ci.yml
+  # Live apply-then-destroy of the example via the terraform-azure action.
+  #
+  # NOTE the cost difference from the Consumption sibling: a Logic App STANDARD runs on a Workflow
+  # Standard plan, which bills while it exists whether or not a workflow runs. This is NOT free at
+  # rest. Dispatch deliberately, and the destroy below always runs.
+  #
+  # Manual dispatch only: it needs the org OIDC variables, the firewalled state account and the org
+  # secrets the tenant bootstrap publishes. Trigger with: gh workflow run ci.yml
   self-test:
     name: Self-test (plan, apply, destroy)
     if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -93,7 +97,7 @@ jobs:
         uses: libre-devops/terraform-azure@v1
         with:
           terraform-code-location: examples
-          terraform-stack-to-run-json: '["minimal","complete"]'
+          terraform-stack-to-run-json: '["minimal"]'
           run-terraform-plan: true
           run-terraform-apply: true
           arm-client-id: ${{ vars.AZURE_CLIENT_ID }}
@@ -111,7 +115,7 @@ jobs:
         uses: libre-devops/terraform-azure@v1
         with:
           terraform-code-location: examples
-          terraform-stack-to-run-json: '["minimal","complete"]'
+          terraform-stack-to-run-json: '["minimal"]'
           run-terraform-plan: false
           run-terraform-plan-destroy: true
           run-terraform-destroy: true
