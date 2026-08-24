@@ -154,7 +154,7 @@ finding that should be fixed.
 
 | Trivy ID | Resource | Finding | Justification |
 |----------|----------|---------|---------------|
-| `AVD-AZU-0012` | `azurerm_storage_account` in `libre-devops/logic-app-standard/azurerm` | Storage account network rules default action should be Deny | Raised against the **dependency** host module this module composes with and does not own. Trivy follows registry module sources, so a finding inside the host module surfaces here even though nothing in this repository declares that resource. This module's own example sets `default_action = "Deny"` with the `AzureServices` bypass, so it is fixed wherever this repository is responsible. Scoped to downloaded module paths only, so it can never mask a finding in this repository's own code. The fix belongs in the host module. |
+| `AVD-AZU-0012` | `azurerm_storage_account` in `libre-devops/logic-app-standard/azurerm` | Storage account network rules default action should be Deny | Raised against the **dependency** host module this module composes with and does not own. Trivy follows registry module sources, so a finding inside the host module surfaces here even though nothing in this repository declares that resource. This module's own example sets `default_action = "Deny"` with the `AzureServices` bypass, so it is fixed wherever this repository is responsible. The host module carries its own documented waiver for the same id, and its reasoning holds: a Logic App Standard reaches its runtime storage from platform ranges, so deny-by-default would break the app and the working lockdown is VNet integration plus private endpoints, which is caller topology. Scoped to downloaded module paths only, so it can never mask a finding in this repository's own code. |
 
 ## Status
 

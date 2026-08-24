@@ -23,6 +23,9 @@ misconfigurations:
       Trivy follows registry module sources during a scan, so a finding inside the host module
       surfaces here even though nothing in this repository declares that resource. This module's
       own example sets default_action Deny with the AzureServices bypass, so the finding is fixed
-      wherever this repository is actually responsible for it. The host module is the right place
-      to fix the dependency, and this waiver is scoped to downloaded module paths only so it can
-      never mask a finding in this repository's own code.
+      wherever this repository is actually responsible for it. The host module carries its own
+      documented waiver for the same id, and its reasoning is correct rather than a dodge: a Logic
+      App Standard reaches its runtime storage from platform ranges, so IP allow-listing is not a
+      reliable lockdown and deny-by-default would break the app. The working lockdown is VNet
+      integration plus private endpoints, which is caller topology. This waiver is scoped to
+      downloaded module paths only, so it can never mask a finding in this repository's own code.
