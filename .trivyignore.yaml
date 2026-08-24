@@ -29,3 +29,17 @@ misconfigurations:
       reliable lockdown and deny-by-default would break the app. The working lockdown is VNet
       integration plus private endpoints, which is caller topology. This waiver is scoped to
       downloaded module paths only, so it can never mask a finding in this repository's own code.
+
+  - id: AVD-AZU-0012
+    paths:
+      - "examples/**"
+    statement: >-
+      Storage account network rules default action, on the example's deployment-package account.
+      Not an oversight and not a default nobody chose: an earlier version of this example set Deny
+      with the AzureServices bypass and the live self-test failed with a 403 writing the package
+      blob. The bypass covers the platform FETCHING the package; it does not cover whatever runs
+      Terraform WRITING it, so deny-by-default breaks the deploy rather than securing it. The
+      working lockdowns are caller topology an example cannot hardcode: an ip_rules allowlist of
+      the build agent's egress IP alongside AzureServices, or a private endpoint on the blob
+      service with a self-hosted runner inside the VNet. Both are documented in the example and in
+      the README. Scoped to examples/ so it can never mask a finding in the module itself.

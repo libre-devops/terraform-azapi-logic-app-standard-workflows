@@ -56,16 +56,22 @@ resource "azurerm_storage_account" "packages" {
   shared_access_key_enabled       = true # the package SAS is minted from the account key
   tags                            = module.tags.tags
 
-  # Deny by default, with the trusted-services bypass so the platform can fetch the package.
+  # No network rules, deliberately, and this was PROVEN the hard way: an earlier version of this
+  # example set default_action Deny with the AzureServices bypass to satisfy a Trivy finding, and
+  # the live self-test failed with
   #
-  # If a deploy ever fails with the platform unable to GET the packageUri, THIS is the first thing
-  # to check. The fallbacks, in order of preference: a private endpoint on the blob service with
-  # VNet integration on the app, or an ip_rules allowlist of the app's outbound IPs. Opening the
-  # account to the internet is not one of them.
-  network_rules {
-    default_action = "Deny"
-    bypass         = ["AzureServices"]
-  }
+  #   checking for existing Blob "...zip" ... unexpected status 403 (This request is not
+  #   authorized to perform this operation.)
+  #
+  # The bypass covers the PLATFORM fetching the package. It does not cover whatever RUNS TERRAFORM
+  # writing it. A deployment-package account has to be writable by the CI runner or agent doing the
+  # deploy, so denying by default breaks the deploy rather than securing it.
+  #
+  # The working lockdowns are caller topology, not something an example can hardcode:
+  #   - ip_rules allow-listing the build agent's egress IP, plus AzureServices for the fetch, or
+  #   - a private endpoint on the blob service with a self-hosted runner inside the VNet.
+  #
+  # Trivy AVD-AZU-0012 is waived for this file with that reasoning; see .trivyignore.yaml.
 }
 
 resource "azurerm_storage_container" "packages" {

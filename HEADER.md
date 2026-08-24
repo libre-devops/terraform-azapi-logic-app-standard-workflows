@@ -158,12 +158,28 @@ finding that should be fixed.
 
 ## Status
 
-> **The offline gates are green and the live path is UNPROVEN.** `terraform test` passes with
-> mocked providers, `validate`, `fmt`, `tflint` and `trivy` are clean, and the package build and
-> rendering are exercised. What has **not** been done is an apply against a real tenant, so the
-> ZipDeploy extension behaviour on a Workflow Standard plan is asserted from Microsoft's
-> documentation rather than from a run. Treat the first deployment as the proving run, and if it
-> misbehaves the finding belongs in this section rather than in a silent fix.
+> **Offline gates green. Live path PARTLY exercised, ZipDeploy itself still unproven.**
 
-Everything the Consumption module claims is proven live. This one does not make that claim yet, and
-saying so is the point.
+`terraform test` passes seven cases with mocked providers, and `validate`, `fmt`, `tflint` and
+`trivy` are clean. A live self-test was dispatched on **24 August 2026** and reached a real apply.
+It did not complete, for two reasons, both recorded here rather than quietly fixed:
+
+1. **A real defect in this repository's example, now fixed.** The example's package storage account
+   had `default_action = "Deny"` with the `AzureServices` bypass, added to satisfy a Trivy finding.
+   The apply failed with `403 This request is not authorized` writing the package blob. The bypass
+   covers the platform **fetching** the package; it does not cover whatever runs Terraform
+   **writing** it. Deny-by-default on a deployment-package account breaks the deploy rather than
+   securing it. See the comment in `examples/minimal/main.tf`.
+
+2. **Subscription quota, not a code problem.** Creating the Workflow Standard plan failed with
+   `Current Limit (Total VMs): 0`. The test subscription has no compute quota, so no Logic App
+   Standard host can be created in it at all. This is why the Consumption sibling can self-test
+   live and this one cannot: Consumption needs no plan.
+
+So what is proven today: the module plans, the package builds, the rendering is correct, and the
+configuration is accepted up to the point the host could not be created. What is **not** proven is
+the `ZipDeploy` extension actually landing content on a running Logic App Standard. That needs a
+subscription with compute quota, and until someone runs it there, treat that step as asserted from
+Microsoft's documentation rather than observed.
+
+The teardown ran and succeeded, so the failed run left nothing behind.
