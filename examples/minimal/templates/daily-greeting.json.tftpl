@@ -1,0 +1,27 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {},
+        "triggers": {
+            "Recurrence_daily": {
+                "description": "Fires once a day. Standard bills for the plan, not per action, so cadence is a design choice rather than a cost one.",
+                "type": "Recurrence",
+                "recurrence": {
+                    "frequency": "Day",
+                    "interval": 1
+                }
+            }
+        },
+        "actions": {
+            "Compose_-_Say_the_greeting": {
+                "description": "The text is a Terraform-owned scalar, substituted by templatefile: the ctrl+F contract in its smallest form. Identical to the Consumption module's example, because the token contract does not change between hosting models.",
+                "type": "Compose",
+                "inputs": "${greeting}",
+                "runAfter": {}
+            }
+        },
+        "outputs": {}
+    },
+    "kind": "Stateful"
+}
