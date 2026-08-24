@@ -103,9 +103,9 @@ jobs:
           arm-client-id: ${{ vars.AZURE_CLIENT_ID }}
           arm-tenant-id: ${{ vars.AZURE_TENANT_ID }}
           arm-subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          firewall-storage-account-name: ${{ secrets.ARM_BACKEND_STORAGE_ACCOUNT }}
-          firewall-storage-resource-group: ${{ secrets.ARM_BACKEND_STORAGE_RG_NAME }}
-          terraform-init-extra-args-json: '["-reconfigure","-upgrade","-backend-config=resource_group_name=${{ secrets.ARM_BACKEND_STORAGE_RG_NAME }}","-backend-config=storage_account_name=${{ secrets.ARM_BACKEND_STORAGE_ACCOUNT }}","-backend-config=container_name=${{ secrets.ARM_BACKEND_CONTAINER_NAME }}"]'
+          firewall-storage-account-name: ${{ secrets.TFSTATE_STORAGE_ACCOUNT }}
+          firewall-storage-resource-group: ${{ secrets.TFSTATE_RESOURCE_GROUP }}
+          terraform-init-extra-args-json: '["-reconfigure","-upgrade","-backend-config=resource_group_name=${{ secrets.TFSTATE_RESOURCE_GROUP }}","-backend-config=storage_account_name=${{ secrets.TFSTATE_STORAGE_ACCOUNT }}","-backend-config=container_name=${{ secrets.TFSTATE_BLOB_CONTAINER }}"]'
 
       # ALWAYS runs, even when the apply step failed: a partial apply must still be torn down
       # rather than left for a human to notice. A destroy against a half-applied or empty state
@@ -122,6 +122,6 @@ jobs:
           arm-client-id: ${{ vars.AZURE_CLIENT_ID }}
           arm-tenant-id: ${{ vars.AZURE_TENANT_ID }}
           arm-subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-          firewall-storage-account-name: ${{ secrets.ARM_BACKEND_STORAGE_ACCOUNT }}
-          firewall-storage-resource-group: ${{ secrets.ARM_BACKEND_STORAGE_RG_NAME }}
-          terraform-init-extra-args-json: '["-reconfigure","-upgrade","-backend-config=resource_group_name=${{ secrets.ARM_BACKEND_STORAGE_RG_NAME }}","-backend-config=storage_account_name=${{ secrets.ARM_BACKEND_STORAGE_ACCOUNT }}","-backend-config=container_name=${{ secrets.ARM_BACKEND_CONTAINER_NAME }}"]'
+          firewall-storage-account-name: ${{ secrets.TFSTATE_STORAGE_ACCOUNT }}
+          firewall-storage-resource-group: ${{ secrets.TFSTATE_RESOURCE_GROUP }}
+          terraform-init-extra-args-json: '["-reconfigure","-upgrade","-backend-config=resource_group_name=${{ secrets.TFSTATE_RESOURCE_GROUP }}","-backend-config=storage_account_name=${{ secrets.TFSTATE_STORAGE_ACCOUNT }}","-backend-config=container_name=${{ secrets.TFSTATE_BLOB_CONTAINER }}"]'
